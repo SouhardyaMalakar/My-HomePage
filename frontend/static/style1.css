@@ -1,0 +1,473 @@
+@font-face {
+    font-family: 'Iosevka';
+    src: url('Iosevka.ttf');
+  }
+body{
+    
+    margin: 0px;
+    padding: 0px; 
+    background-image: url('81-810415_kaziranga-national-park.jpg' );
+    height:100%;
+    width: auto;
+    color: white;
+    background-repeat: repeat;
+    background-attachment: fixed;
+    scroll-behavior: smooth;
+    
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+
+.left{
+   
+    animation-name: breathing;
+    animation-duration: 3.5s;
+    animation-iteration-count: infinite ;
+    animation-timing-function: ease-in;
+    z-index: -1;
+    position:sticky;
+    display: inline-block;
+    color: #000000;
+    
+    
+    top:20px;
+    
+    width:250;
+    
+}
+@keyframes breathing{
+    0%{
+        opacity: 0.2;
+    }
+
+    50%{
+       opacity: 1; 
+    }
+ 
+    100%{
+        opacity: 0.2;
+    }
+}
+@keyframes revbreathing{
+    0%{
+        opacity: .7;
+    }
+
+    50%{
+       opacity: 0.1; 
+    }
+ 
+    100%{
+        opacity: .7;
+    }
+}
+
+.mid1{
+    box-shadow: 12px 5px 15px rgb(0, 0, 0);
+    background: rgba(255, 30, 0, 0.13);
+    width:78%;
+    text-align:center;
+    justify-content: center;
+    justify-content: space-between;
+    display: inline-block;
+    margin: 200px;
+    margin-top: 150px;
+    margin-bottom: 0px;
+}
+
+.mid2{
+    box-shadow: 12px 5px 15px rgb(0, 0, 0);
+    background: rgba(255, 174, 0, 0.13);
+    width:78%;
+    text-align:center;
+    justify-content: center;
+    justify-content: space-between;
+    display: inline-block;
+    margin: 200px;
+    margin-top:50px;
+    margin-bottom: 50px;
+    
+}
+.mid3{
+    box-shadow: 12px 5px 15px rgb(0, 0, 0);
+    background: rgba(0, 183, 255, 0.13);
+    width:78%;
+    text-align:center;
+    justify-content: center;
+    justify-content: space-between;
+    display: inline-block;
+    margin-left: 200px;
+    margin-top: 0px;
+    margin-bottom: 50px;
+
+}
+.mid4{
+    box-shadow: 12px 5px 15px rgb(0, 0, 0);
+    background: rgba(18, 5, 95, 0.1);
+    width:78%;
+    text-align:center;
+    justify-content: center;
+    justify-content: space-between;
+    display: inline-block;
+    margin: 200px;
+    margin-top: 0px;
+    margin-bottom: 50px;
+}
+
+.clock{
+    font-family: 'Share Tech Mono', monospace;
+    box-shadow: 5px 5px 15px rgb(0, 0, 0);
+    background: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    text-shadow: 0 0 10px rgb(199, 0, 0), 0 0 20px rgb(192, 0, 0), 0 0 30px #b90019, 0 0 40px #e60013, 0 0 50px #e60032, 0 0 60px #e6001f, 0 0 70px #e60073;
+    font-size: 35px;
+    text-decoration: azure;
+    width:300px;
+    height:60px;
+    text-align:center;
+    justify-content: center;
+    position: absolute;
+    left:250px;
+    top:257px;
+    border-radius: 20px;
+    padding-top: 20px;
+    z-index: -1;
+}
+.todo{
+    
+    box-shadow: 5px 5px 15px rgb(0, 0, 0);
+    background: rgb(0, 0, 0);
+    font-size: 20px;
+    width:300px;
+    height:75px;
+    text-align:center;
+    justify-content: center;
+    position: absolute;
+    right:100px;
+    top:150px;
+    border-radius: 20px;
+    padding-top: 20px;
+    z-index: -1;
+
+}
+
+.essential{
+    position:absolute;
+    display: flex;
+    top:240px;
+    margin-left: 500px;
+    width:850px;
+    height: 100px;
+    justify-content: center;
+    padding-top: 14px;  
+}
+
+
+ul{ display: block;
+    
+    padding-inline-start: 0px
+}
+
+a{
+    font-family: 'Share Tech Mono', monospace;
+    color: aliceblue;
+    text-decoration: none;
+}
+.items >li > it:hover{  
+    width:350px;  
+    height:auto;
+    box-shadow: 15px 15px 15px black;
+    background: rgb(0, 0, 0);
+    border-radius: 20px;   
+    font-size:22px;
+    color: rgb(255, 255, 255);
+    transition: 0.3s;
+    transition-delay: 0.1s;
+}
+.items > li > it:not(hover){  
+    display: inline-block;  
+    width:300px;  
+    height:0px;
+    text-align: left;
+    background: rgba(0, 0, 0, 0.52);
+    border-radius: 20px;
+    font-size:0px;
+    margin: 30px;
+    padding-top: 40px;
+    padding-left: 40px;
+    padding-bottom: 0px;   
+    transition: 0.2s;
+}
+.items li{
+       
+    display: inline-block; 
+    width: 30%;
+    margin:auto;
+}
+.items li el{
+    font-family: 'Varela', sans-serif;
+    display: inline-block;  
+    text-align: left;
+    width:350px;  
+    height:10px;
+    font-size:20px;
+    /* font-weight: bold; */
+    
+    color: rgb(255, 255, 255);       
+}
+.left img{
+    width:160px;
+    box-shadow: 15px 15px 15px black;
+    border-radius: 20px;
+    margin:0px 30px;
+}
+h1{
+    /* text-shadow:5px 5px 10px rgb(0, 0, 0); */
+    font-size: 45px;
+    font-family: 'Permanent Marker', cursive;
+    
+    text-align: center;  
+}
+h2{
+    font-family: 'Luckiest Guy', cursive;
+    text-align: center;
+
+}
+
+.btn a{
+    text-size-adjust: 1.5;
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+}
+
+* {
+    font-family : sans-serif; /* Change your font family */
+  }
+  
+  .content-table {
+    
+    border-collapse: collapse;
+    margin-left: 200px;
+    margin-bottom: 100px;
+    font-size: 1.5em;
+    min-width: 1490px;
+    border-radius: 5px 5px 0 0;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 15px 15px 15px rgb(0, 0, 0);
+  }
+  
+  .content-table thead tr {
+    background-color: #002e9894;
+    color: #ffffff;
+    text-align: left;
+    font-weight: bold;
+  }
+  
+  .content-table th,
+  .content-table td {
+    padding: 12px 15px;
+  }
+  
+  .content-table tbody tr {
+    border-bottom: 1px solid #dddddd00;
+  }
+  
+  .content-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f377;
+    color: #000000;
+  }
+    
+  .content-table tbody tr:nth-of-type(odd) {
+    background-color: #f3f3f300;
+    color: #ffffffde;
+  }
+  
+  .content-table tbody tr:last-of-type {
+    border-bottom: 2px solid #004f98;
+  }
+  
+  .content-table tbody tr {
+    font-weight: bold;
+    color: #000000;
+  }
+.i1{
+    height:80px;
+    width: 80px;
+    border-radius: 100px;
+    margin-left: 40px;
+    box-shadow: 5px 5px 5px black;
+    }
+.i1:hover{
+    
+    border-radius: 100px;
+    transform:scale(1.2) ;
+    box-shadow: 10px 10px 10px black; 
+    transition: 0.2s; 
+}
+.i1:not(hover){
+    
+    border-radius: 100px;
+    transform:scale(1) ;
+    box-shadow: 5px 5px 5px black; 
+    transition: 0.2s; 
+}
+.i2{
+    height:50px;
+    width: 50px;
+    border-radius: 100px;
+    margin-left: 40px;
+    box-shadow: 5px 5px 5px black;
+
+}
+
+.search-btn{
+    box-shadow:15px 15px 15px rgb(0, 0, 0) ;
+    float:right;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgb(255, 255, 255);
+    display: flex;
+    margin-top: 5px;
+    justify-content: center;
+    align-items: center;
+}
+.search-txt{
+    border:none;
+    background:none;
+    outline: none;
+    float: left;
+    color: white;
+    font-size: 20px;
+    transition: 0.4s;
+
+}
+.search-box:hover{ 
+    box-shadow:15px 15px 15px rgb(0, 0, 0) ;
+    position:absolute;
+    display: flex;
+    justify-content: center;
+    text-align: justify;
+    padding: 10px;
+    border-radius: 40px;
+    background: #444444;
+    width: 300px;
+    height: 50px;  
+    margin-left: 200px;
+    margin-top: 000px;
+    transition: 0.3s;
+}
+.search-box:not(hover){ 
+    box-shadow:15px 15px 15px rgb(0, 0, 0) ;
+    position:absolute;
+    display: flex;
+    justify-content: center;
+    text-align: justify;
+    padding: 10px;
+    border-radius: 40px;
+    background: #444444;
+    width: 0px;
+    height: 50px;  
+    margin-left: 200px;
+    margin-top: 000px;
+    transition: 0.3s;
+}
+#task-container{
+    font-family: 'Share Tech Mono', monospace;
+    box-shadow: 5px 5px 15px rgb(0, 0, 0);
+    background: rgb(0, 0, 0);
+    font-size: 20px;
+    width:350px;
+    height:350px;
+    text-align:center;
+    justify-content: center;
+    position: absolute;
+    right:100px;
+    top:30px;
+    border-radius: 20px;
+    padding-top: 5px;
+
+
+}
+
+#list-wrapper{
+    background-attachment: fixed;
+    scroll-behavior: smooth;
+    margin-top:-10px;
+
+}
+::-webkit-scrollbar {
+display: none;
+}
+
+#form-wrapper{
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0rem;
+  background-color: #000;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+  padding:20px;
+  padding-bottom:0px;
+  border-radius: 20px;
+
+}
+
+#submit{
+  background-color: #36d9b6;
+  border-radius: 2px;
+  border:0;
+  color: #fff;
+}
+
+.flex-wrapper{
+    display: flex;
+    padding: 0px;
+}
+
+.task-wrapper{
+      margin:25px;	
+      cursor: pointer;
+      color: #686868;
+    }
+#title.form-control{
+   
+    height: 30px;
+    border-radius: 10px;
+    margin-bottom:20px;
+}
+#submit.btn{
+    background: rgb(255, 123, 62);
+    height: 30px;
+    padding: 5px;
+    border-radius: 5px;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+    
+    }
+.element{
+        text-align:left;
+        width:200px;
+        padding-left:10px;
+        font-weight: bold;
+        color: rgb(255, 255, 255);
+        text-shadow: 0 0 10px rgba(199, 0, 0, 0.349), 0 0 10px rgba(192, 0, 0, 0.438), 0 0 10px #b9001977, 0 0 10px #e6001373, 0 0 10px #e600327e, 0 0 10px #e6001f, 0 0 10px #e600737c;
+    
+    }
+.btn{
+    margin-top: 3px;
+    border-radius: 20%;
+    color: rgb(255, 255, 255);
+background: rgb(0, 0, 0);
+border:.5px solid rgba(255, 255, 255, 0.548);
+}
+.form-control{
+    width:85%;
+    padding-left: 20px;
+    font-family: 'Share Tech Mono', monospace;
+}
+.title{
+    font-family: 'Share Tech Mono', monospace;
+}

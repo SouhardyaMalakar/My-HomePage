@@ -1,0 +1,447 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<link rel="stylesheet" href="{% static 'style1.css' %}">
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet"> 
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Hanalei+Fill&display=swap" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css2?family=Varela&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Yeon+Sung&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&display=swap" rel="stylesheet">
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script async src="https://cse.google.com/cse.js?cx=1e7525940ee177869"></script>
+    
+
+	<title>ToDo</title>
+</head>
+
+<body>
+
+  	<div class="container">
+
+		<div id="task-container">
+			<div id="form-wrapper">
+				<form id="form">
+					<div class="flex-wrapper">
+						<div style="flex: 6">
+							<input id="title" class="form-control" type="text" name="title" placeholder="Add task">
+						</div>
+						<div style="flex: 1">
+							<input id="submit" class="btn" type="submit" >
+						</div>
+					</div>
+				</form>
+			</div>
+
+
+			<div id="list-wrapper">
+			
+			</div>	
+		</div>
+
+	</div>
+<script type="text/javascript">
+		/*
+			KEY COMPONENTS:
+			"activeItem" = null until an edit button is clicked. Will contain object of item we are editing
+			"list_snapshot" = Will contain previous state of list. Used for removing extra rows on list update
+			
+			PROCESS:
+			1 - Fetch Data and build rows "buildList()"
+			2 - Create Item on form submit
+			3 - Edit Item click - Prefill form and change submit URL
+			4 - Delete Item - Send item id to delete URL
+			5 - Cross out completed task - Event handle updated item
+			NOTES:
+			-- Add event handlers to "edit", "delete", "title"
+			-- Render with strike through items completed
+			-- Remove extra data on re-render
+			-- CSRF Token
+		*/
+		function getCookie(name) {
+		    var cookieValue = null;
+		    if (document.cookie && document.cookie !== '') {
+		        var cookies = document.cookie.split(';');
+		        for (var i = 0; i < cookies.length; i++) {
+		            var cookie = cookies[i].trim();
+		            // Does this cookie string begin with the name we want?
+		            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+		                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+		                break;
+		            }
+		        }
+		    }
+		    return cookieValue;
+		}
+		var csrftoken = getCookie('csrftoken');
+
+		var activeItem = null
+		var list_snapshot = []
+
+    buildList()
+
+    function buildList(){
+        var wrapper=document.getElementById('list-wrapper')
+        //wrapper.innerHTML=''
+
+        var url='http://127.0.0.1:8000/api/task-list/'
+
+        fetch(url)
+        .then((resp) => resp.json())
+        .then(function(data){
+            console.log('Data:', data)
+
+            var list = data
+            for(var i in list){
+
+				try{
+					document.getElementById(`data-row-${i}`).remove()
+				}catch(err){
+
+				}
+
+                var title = `<span class="title">${list[i].title}</span>` 
+				if (list[i].completed == true){
+					title = `<strike class="title">${list[i].title}</strike>`
+				}
+
+                var item = `
+                <div id="data-row-${i}" class="task-wrapper flex-wrapper">
+                    <div  class="element">  
+						${title}	
+					</div>
+					<div style="flex:1">
+						<button class="btn btn-sm btn-outline-info edit">Edit </button>
+				    </div>
+					<div style="flex:1">
+						<button class="btn btn-sm btn-outline-dark delete">-</button>
+					</div>
+				</div>
+                
+            `
+            wrapper.innerHTML += item  
+
+
+
+            }
+
+			if (list_snapshot.length> list.length){
+				for(var i = list.length; i< list_snapshot.length; i++){
+					document.getElementById(`data-row-${i}`).remove()
+
+				}
+			}
+			
+			list_snapshot=list
+            
+			for(var i in list){
+                var editBtn = document.getElementsByClassName('edit')[i]
+                var deleteBtn = document.getElementsByClassName('delete')[i]
+                var title = document.getElementsByClassName('title')[i]
+
+
+                editBtn.addEventListener('click', (function(item){
+                    return function(){
+                        editItem(item)
+                    }
+                })(list[i]))
+
+
+                deleteBtn.addEventListener('click', (function(item){
+                    return function(){
+                        deleteItem(item)
+                    }
+                })(list[i]))
+
+
+                title.addEventListener('click', (function(item){
+                    return function(){
+                        strikeUnstrike(item)
+                    }
+                })(list[i]))
+
+            }
+
+        })
+
+    }
+
+
+    var form = document.getElementById('form-wrapper')
+    form.addEventListener('submit', function(e){
+        e.preventDefault()
+        console.log('Form submitted')
+        var url=`http://127.0.0.1:8000/api/task-create/`
+        if (activeItem != null){
+            var url = `http://127.0.0.1:8000/api/task-update/${activeItem.id}/`
+            activeItem = null
+        }
+
+
+        var title= document.getElementById('title').value
+        fetch(url, {
+            method:'POST',
+            headers:{
+                'Content-type':'application/json',
+                'X-CSRFToken':csrftoken,
+            },
+            body:JSON.stringify({'title':title})
+		}
+		).then(function(response){
+            buildList()
+            document.getElementById('form').reset()
+        })
+    })
+
+
+    function editItem(item){
+        console.log('Item clicked:', item)
+        activeItem = item 
+        document.getElementById('title').value = activeItem.title
+    }
+    
+
+	function deleteItem(item){
+		console.log('Delete clicked')
+		fetch(`http://127.0.0.1:8000/api/task-delete/${item.id}/`, {
+			method:'DELETE', 
+			headers:{
+				'Content-type':'application/json',
+				'X-CSRFToken':csrftoken,
+			}
+		}).then((response) => {
+			buildList()
+		})
+	}
+
+
+	function strikeUnstrike(item){
+		console.log('Strike clicked')
+
+		item.completed = !item.completed
+		fetch(`http://127.0.0.1:8000/api/task-update/${item.id}/`, {
+			method:'POST', 
+			headers:{
+				'Content-type':'application/json',
+				'X-CSRFToken':csrftoken,
+			},
+			body:JSON.stringify({'title':item.title, 'completed':item.completed})
+		}).then((response) => {
+			buildList()
+		})
+	}
+
+
+</script>
+
+<div class="left">
+	<img class="i"src="{% static 'logo.jpg'%}" alt="">
+	<div><h1>REVOX</h1></div>
+</div>
+
+<div class="search-box">
+	<input class="search-txt" type="text"  placeholder="Search">
+	<a class="search-btn" href=""></i>
+	</a>
+
+</div>
+
+<div class="essential">
+	<a href="https://www.google.com/"target="_blank" ><img class="i1" src="{% static 'google.jpg'%}"></a>
+	<a href="https://www.youtube.com/"target="_blank" ><img class="i1" src="{% static 'youtube.jpg'%}"></a>
+	<a href="https://mail.google.com/mail/u/0/?tab=rm#inbox"target="_blank" ><img class="i1" src="{% static 'Gmail-new-logo-01.jpeg'%}"></a>
+	<a href="https://github.com/"target="_blank" ><img class="i1" src="{% static 'GitHub-Mark.jpg'%}"></a>
+	<a href="https://in.000webhost.com/members/website/list"target="_blank" ><img class="i1" src="{% static 'webhodt.jpg'%}"></a>
+	<a href="https://dashboard.heroku.com/apps"target="_blank" ><img class="i1" src="{% static 'heroku.png'%}"></a>
+	
+</div>
+
+  <div id="MyClockDisplay" class="clock" onload="showTime()">
+  
+   <script>
+	 function showTime(){
+var date = new Date();
+var h = date.getHours(); // 0 - 23
+var m = date.getMinutes(); // 0 - 59
+var s = date.getSeconds(); // 0 - 59
+var session = "AM";
+
+if(h == 0){
+	h = 12;
+}
+
+if(h > 12){
+	h = h - 12;
+	session = "PM";
+}
+
+h = (h < 10) ? "0" + h : h;
+m = (m < 10) ? "0" + m : m;
+s = (s < 10) ? "0" + s : s;
+
+var time = h + ":" + m + ":" + s + " " + session;
+document.getElementById("MyClockDisplay").innerText = time;
+document.getElementById("MyClockDisplay").textContent = time;
+
+setTimeout(showTime, 1000);
+
+}
+
+showTime();
+</script>
+	
+  </div>
+<div class="mid1">
+  <ul class="items">
+	  <li><el>♬ Mucic</el></li>
+	  <li><el>❒ YTvideo</el></li>
+	  <li><el>☢ Anime/Manga</el></li>
+	 
+	  <li><it><a href="https://www.youtube.com/watch?v=5qap5aO4i9A"target="_blank">♪ LOFI<p><a href="https://www.youtube.com/watch?v=eWG21fVOJd0"target="_blank">♪ BASS<p><a href="https://www.youtube.com/watch?v=MEkaqZecpUQ"target="_blank">♪ EDMs<p><a href="https://www.youtube.com/watch?v=bMSn2n48xqA"target="_blank">♪ CHILL<p><a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"target="_blank">♪ RANDOM</it></a></li>
+	  <li><it><a href="https://www.youtube.com/user/KSIOlajidebtHD"target="_blank">❍ KSI<p><a href="https://www.youtube.com/user/PewDiePie"target="_blank">❍ PEWDS<p><a href="https://www.youtube.com/channel/UCcmxOGYGF51T1XsqQLewGtQ"target="_blank">❍ The BOIS<p><a href="https://www.youtube.com/channel/UCBBU7zUOhR_qShfMV26UUCA"target="_blank">❍ NUX<p><a href="https://www.youtube.com/channel/UCPtPyb4VvaNqjkbL_tSVFVA"target="_blank">❍ THUGESH</it></a></li>
+	  <li><it><a href="https://w11.mangafreak.net/Manga/Grand_Blue?__cf_chl_jschl_tk__=06de1abe2ddd5ad64cc1c8b33379e444c7a25784-1608557782-0-AWOUIluF3zyMDOM4aFa49bs_4xNSnl8nD0whCgKw5ssXU9jjC9tkZ7HXWBd0WISW7wcLbE24M0fFFhvl5wSaVM7ZM4u4MkdlHs89MHAiMr6hckBUI_qAYa8AkN8yWotYhPupFqzCYKplLG4SCZdQ779AGavY5Ns6QrR5QtfsPOF4GcOhlfHw3EupJVAyuKEj5lMWM_QoTO9m5tq1S6-VDnLx_g4oKnvlkJLik9Zl2qwLCFJVCTiMvF12wGm1tihA_4DssR02Ah75KzVvtjtcMf8fTpMCLi3029dey0Oel1Sx6iPyiHmJWj1Ib54UUEOWtjZriVF4Xfcn0W4MhXKmggg"target="_blank">☗ Grandblue <p><a href="https://www2.kickassanime.rs/anime/moriarty-the-patriot-4229668"target="_blank">☗ Moriaty The Patriot<p><a href="https://manganelo.com/manga/xtbw261401566264968"target="_blank">☗ Rental Girlfriend<p><a href="https://www2.kickassanime.rs/anime/sorcery-fight-723619"target="_blank">☗ Jujutsu Kaizen<p><a href="https://levelingsolo.com/"target="_blank">☗ SoloLeveling<p><a href="https://myanime69.000webhostapp.com/"target="_blank">☗ More</it></a></li>
+
+
+  </ul>
+
+	 
+</div>
+
+<div class="mid2">
+	<ul class="items">
+		<li><el>✒ CLASS LINKS</el></li>
+		<li><el>✎ CLASS ROOM</el></li>
+		<li><el>❖ LABS</el></li>
+	   
+		<li><it><a href="https://meet.google.com/bnu-uuxo-ojj"target="_blank">• Physics Class <p><a href="https://meet.google.com/ahy-kaif-bnn"target="_blank">• Maths Class<p><a href="https://meet.google.com/qxz-pzjk-nga?pli=1&authuser=2"target="_blank">• BE class<p><a href="https://meet.google.com/aja-yhoc-qxd"target="_blank">• Computer Class<p><a href="https://meet.google.com/yyk-dhdr-nrp"target="_blank">• English Class</it></a></li>
+		<li><it><a href="https://classroom.google.com/u/2/c/MjI5MDU1MzMyMTA0?cjc=okn73zr"target="_blank">☀ Physics<a href=""target="_blank"><p><a href="https://classroom.google.com/u/2/c/MjQ4ODg3NjY2ODQz?cjc=okn73zr"target="_blank">☀ Maths<p><a href="https://classroom.google.com/u/2/c/MjMwNjU3Mzc3Mzk2?cjc=okn73zr"target="_blank">☀ BE class<p><a href="https://classroom.google.com/u/2/c/MjMwMzk2MDUwNzMx?cjc=okn73zr"target="_blank">☀ CS Class<p><a href="https://classroom.google.com/u/2/c/MjQ4MjE2NzMwMzkw" target="_blank">☀ English </it></a></li>
+		<li><it><a href="https://classroom.google.com/u/2/c/MjQ5NzEyMjM2NjQy?cjc=okn73zr"target="_blank">⁍ Cs LAB<p><a href="https://classroom.google.com/u/2/c/MjQzNTEwODgzOTE3?cjc=okn73zr"target="_blank">⁍ Physics LAB<p><a href="https://classroom.google.com/u/2/c/MjQzNDk5MzY0MTc5?cjc=okn73zr"target="_blank">⁍ BE LAB</a></it></a></li>
+
+		<li><el>☁ DRIVES</el></li>
+		<li><el>☍ MOODLE</el></li>
+		<li><el>⚝ My Emails</el></li>
+
+		<li><it><a href="https://drive.google.com/drive/u/2/folders/1fRIbAxkqsQdh48VhUxrUY9KprxLahnEX"target="_blank">☆ Collage Drive<p><a href="https://drive.google.com/drive/u/2/folders/19dEEPoQdWGLpDJSqdJJJgw1JXJgHjL9-"target="_blank">☆ Sem1<p><a href="https://drive.google.com/drive/u/2/folders/1Yt8dsRuDbSg1t9wY2o3qdwW9Hgw_n4MG"target="_blank">☆ Semister1<p><a href="https://drive.google.com/drive/u/2/folders/1fRIbAxkqsQdh48VhUxrUY9KprxLahnEX"target="_blank"><p><a href=""target="_blank">☆ Y20 B2 Sem1</it></a></li>
+		<li><it><a href="https://moodle.lnmiit.ac.in/moodle/my/"target="_blank">❐ Dashboard<p><a href="https://moodle.lnmiit.ac.in/moodle/course/view.php?id=11"target="_blank">❐ Physics<p><a href="https://moodle.lnmiit.ac.in/moodle/course/view.php?id=10"target="_blank">❐ Mathematics-1<p><a href="https://moodle.lnmiit.ac.in/moodle/course/view.php?id=3"target="_blank">❐ BE <p><a href="https://moodle.lnmiit.ac.in/moodle/course/view.php?id=5"target="_blank">❐ CS<p><a href="https://moodle.lnmiit.ac.in/moodle/course/view.php?id=6"target="_blank">❐ CS Lab<p><a href="https://moodle.lnmiit.ac.in/moodle/course/view.php?id=9"target="_blank">❐ English</a></it></a></li>
+		<li><it><a href="https://mail.google.com/mail/u/0/?tab=rm#inbox"target="_blank">souhardyamalakar.cob@gmail.com<p><a href="https://mail.google.com/mail/u/1/#inbox"target="_blank">souhardyamalakar@gmail.com<p><a href="https://mail.google.com/mail/u/2/#inbox"target="_blank">20UCS197@lnmiit.ac.in<p></it></a></li>
+		  
+  
+	</ul>
+</div>
+<table class="content-table">
+  <thead>
+	<tr>
+	  <th>Day</th>
+	  <th>1-2pm</th>
+	  <th>2-3pm</th>
+	  <th>3-4pm</th>
+	  <th>4-5pm</th>
+	  <th>5-6pm</th>
+	</tr>
+  </thead>
+  <tbody>
+	<tr>
+	  <td>Monday</td>
+	  <td>M-1</td>
+	  <td>CP</td>
+	  <td>BE</td>
+	  <td>TCE</td>
+	  <td>CLP</td>
+	</tr>
+	<tr class="active-row">
+	  <td>Tuesday</td>
+	  <td>2:30</td>
+	  <td>-----</td>
+	  <td>4PM</td>
+	  <td>M-1</td>
+	  <td>TUTORIAL</td>
+	</tr>
+	<tr>
+	  <td>Wednesday</td>
+	  <td>CP</td>
+	  <td>BE</td>
+	  <td>TCE</td>
+	  <td>CLP</td>
+	  <td>M-1</td>
+	</tr>
+	<tr>
+	  <td>Thursday</td>
+	  <td>-</td>
+	  <td>-</td>
+	  <td>-</td>
+	  <td>-</td>
+	  <td>-</td>
+	</tr>
+	<tr>
+	  <td>Friday</td>
+	  <td>BE</td>
+	  <td>TCE</td>
+	  <td>CLP</td>
+	  <td>M-1</td>
+	  <td>CP</td>
+	</tr>
+	<tr>
+	  <td>Saturday</td>
+	  <td>-</td>
+	  <td>-</td>
+	  <td>-</td>
+	  <td>-</td>
+	  <td>-</td>
+	</tr>
+   
+  </tbody>
+</table>
+<div class="mid3">
+	<ul class="items">
+		<li><el>♾ YOUTUBE LINKS</el></li>
+		<li><el>❝ CODING BLOGS</el></li>
+		<li><el>❮ CODEFORCES</el></li>
+	   
+		<li><it><a href="https://www.youtube.com/watch?v=xcPFUCh0jT0&list=PLfqMhTWNBTe0b2nM6JHVCnAkhQRGiZMSJ&index=21"target="_blank">✦ C++ ApnaCollege<p><a href="https://www.youtube.com/watch?v=j8nAHeVKL08&list=PLu0W_9lII9agpFUAlPFe_VNSlXW5uE0YL"target="_blank">✦ C++ CodeWithHarry<p><a href="https://www.youtube.com/watch?v=6mbwJ2xhgzM&list=PLu0W_9lII9agiCUZYRsvtGTXdxkzPyItg"target="_blank">✦ WbDev CodeWithHarry<p><a href="https://www.youtube.com/channel/UCBr_Fu6q9iHYQCh13jmpbrg"target="_blank">✦ Erricto</it></a></li>
+		<li><it><a href="https://www.geeksforgeeks.org/"target="_blank">♙ Geeksforgeeks<p><a href="https://stackoverflow.com/"target="_blank">♙ Stackoverflow</it></a></li>
+		<li><it><a href="https://codeforces.com/profile/revox_216"target="_blank">☣ Home<p><a href="https://codeforces.com/contests/1472"target="_blank">☣ Contests<p><a href="https://codeforces.com/ratings"target="_blank">☣ Rating<p><a href="https://codeforces.com/apiHelp"target="_blank">☣ API</it></a></li>
+
+		<li><el>❯ CODECHEF</el></li>
+		<li><el>➾ GSOC</el></li>
+		<li><el>➳ MOZILLA:GIT</el></li>
+
+		<li><it><a href="https://www.codechef.com/node"target="_blank">☮ Codechef<p><a href="https://www.codechef.com/JAN21C"target="_blank">☮ Compitition<p><a href="https://www.codechef.com/LEARNDSA/?itm_medium=navmenu&itm_campaign=learndsa"target="_blank">☮ DSA<p><a href="https://www.codechef.com/tags/problems/?itm_medium=navmenu&itm_campaign=tagsproblems" target="_blank">☮ Problem Tags</it></a></li>
+		<li><it><a href="https://summerofcode.withgoogle.com/"target="_blank">♢ Home<p><a href="https://www.youtube.com/watch?v=C9O5TNZc5Co"target="_blank">♢ YT<p><a href="https://www.youtube.com/watch?v=nhtREXZgfP8"target="_blank">♢ YT<p><a href="https://www.youtube.com/watch?v=174p2BjUw0M"target="_blank">♢ YT<p></it></a></li>
+		<li><it><a href="Mhttps://github.com/mozilla?q=&type=&language=python"target="_blank">♯ Home<p><a href="https://github.com/mozilla/addons-server"target="_blank">♯ addons-server<p><a href="https://github.com/mozilla/foundation.mozilla.org"target="_blank">♯ foundation.mozilla.org<p><a href="https://github.com/mozilla/ichnaea"target="_blank">♯ ichnaea<p><a href="https://github.com/mozilla/OpenWPM"target="_blank">♯ OpenWPM</it></a></li>
+  
+	</ul>
+</div>
+
+<div class="mid4">
+	<ul class="items">
+		<li><el>☉ WedDev Links</el></li>
+		<li><el>⚔ Exam Links</el></li>
+		<li><el>☞ SOFTWARE LINKS</el></li>
+	   
+		<li><it><a href="https://roadmap.sh/roadmaps"target="_blank">♜ Road Map<p><a href="https://www.toptal.com/designers/htmlarrows/symbols/"target="_blank">♜ Epic Symbols<p><a href="https://fonts.google.com"target="_blank">♜ Google Fonts<p><a href="https://in.000webhost.com" target="_blank">♜ WebHost</a><p></li>
+		<li><it><a href=""target="_blank">⚙ NO EXAM<p></it></a></li>
+		<li><it><a href="https://www.multisim.com/contributors/507625-souhardyamalakar/"target="_blank">☯ MULTISIM<p><a href="https://www.onlinegdb.com/online_c_compiler"target="_blank">☯ C-compiler<p></it></a></li>
+
+		<li><el>✌ Random Links</el></li>
+		<li><el>❚ M-1 Site</el></li>
+		<li><el>➣ Amazon</el></li>
+		<li><it><a href=""target="_blank">❄ NOTA<p></it></a></li>
+		<li><it><a href="https://sites.google.com/site/lnmiitmth1/home"target="_blank">✧ Home<p><a href="https://sites.google.com/site/lnmiitmth1/assignments"target="_blank">✧ Assignments<p></p></it></a></li>
+		<li><it><a href="https://www.amazon.in/"target="_blank">✪ Amazon<p></it></a></li>
+  
+	</ul>
+</div>
+
+</body> 
+
+</html>
